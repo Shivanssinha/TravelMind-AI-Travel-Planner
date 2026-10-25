@@ -1,0 +1,19 @@
+# Secrets
+.env
+
+# Local tooling
+.claude/
+.venv/
+venv/
+
+# Python-generated files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Frontend dependencies
+node_modules/
+
+# Generated local vector database
+backend/chroma_db/
+*.sqlite3

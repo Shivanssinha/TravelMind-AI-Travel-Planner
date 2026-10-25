@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TravelMind — Discover India</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+  <div class="navbar-inner">
+    <div class="nav-brand">
+      <span class="nav-logo-icon">🗺️</span>
+      <span class="nav-logo-text">TravelMind</span>
+    </div>
+    <div class="nav-pills">
+      <span class="nav-pill">521 Destinations</span>
+      <span class="nav-pill accent">AI-Powered</span>
+    </div>
+    <div id="auth-nav" class="nav-auth-slot"></div>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <span class="hero-eyebrow">India Travel Planner</span>
+    <h1 class="hero-title">Never Stop<br>Exploring India</h1>
+    <p class="hero-sub">From Himalayan peaks to tropical backwaters — AI-powered recommendations personalised for you</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><span class="hero-stat-num">521</span><span class="hero-stat-label">Destinations</span></div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat"><span class="hero-stat-num">30+</span><span class="hero-stat-label">States & UTs</span></div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat"><span class="hero-stat-num">AI</span><span class="hero-stat-label">Personalised</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SEARCH PANEL (floats below hero) ===== -->
+<div class="search-float-wrap">
+  <section class="search-panel">
+    <div class="search-panel-header">
+      <h2 class="search-panel-title">Plan Your Trip</h2>
+      <span class="search-panel-sub">Tell us what you want — we'll find the perfect destination</span>
+    </div>
+
+    <!-- Tabs -->
+    <div class="search-tabs">
+      <button class="search-tab active" onclick="switchSearchTab('discover', this)">🔍 Discover</button>
+      <button class="search-tab" onclick="switchSearchTab('lookup', this)">🎯 I Know Where to Go</button>
+    </div>
+
+    <!-- Tab: Discover (full form) -->
+    <div class="search-tab-pane active" id="tab-discover">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="city">Your City</label>
+          <div class="city-row">
+            <input type="text" id="city" placeholder="e.g. Delhi, Mumbai, Bangalore" />
+            <button class="btn-gps" id="btn-gps" onclick="getGPS()" title="Use my location">📍</button>
+          </div>
+          <span class="gps-status" id="gps-status"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="days">Days <span id="days-val" class="badge">5</span></label>
+          <input type="range" id="days" min="1" max="20" value="5" />
+        </div>
+
+        <div class="form-group">
+          <label for="budget">Budget / Day <span id="budget-val" class="badge">₹2,000</span></label>
+          <input type="range" id="budget" min="500" max="15000" step="500" value="2000" />
+        </div>
+
+        <div class="form-group">
+          <label>Travel Group</label>
+          <div class="radio-group">
+            <label class="radio-btn"><input type="radio" name="group" value="solo" /> Solo</label>
+            <label class="radio-btn"><input type="radio" name="group" value="couple" /> Couple</label>
+            <label class="radio-btn active"><input type="radio" name="group" value="friends" checked /> Friends</label>
+            <label class="radio-btn"><input type="radio" name="group" value="family" /> Family</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="month">Travel Month</label>
+          <select id="month">
+            <option value="0">Current Month</option>
+            <option value="1">January</option><option value="2">February</option>
+            <option value="3">March</option><option value="4">April</option>
+            <option value="5">May</option><option value="6">June</option>
+            <option value="7">July</option><option value="8">August</option>
+            <option value="9">September</option><option value="10">October</option>
+            <option value="11">November</option><option value="12">December</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="query">Describe Your Trip</label>
+          <input type="text" id="query" placeholder="e.g. peaceful mountains, adventure rafting…" />
+        </div>
+      </div>
+
+      <div class="form-group full-width vibe-section">
+        <label>Travel Vibe <span class="hint">(select all that apply)</span></label>
+        <div class="vibes-grid" id="vibes-grid"></div>
+      </div>
+
+      <div class="search-footer">
+        <button class="btn-search" id="search-btn" onclick="doSearch()">
+          <span>🔍</span> Find Destinations
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab: I Know Where to Go -->
+    <div class="search-tab-pane" id="tab-lookup">
+      <div class="lookup-row">
+        <div class="form-group lookup-dest-group">
+          <label for="dest-lookup-input">Destination</label>
+          <input type="text" id="dest-lookup-input" class="lookup-dest-input"
+            placeholder="e.g. Manali, Goa, Coorg…"
+            list="dest-suggestions"
+            onkeydown="if(event.key==='Enter') lookupDestination()" />
+          <datalist id="dest-suggestions"></datalist>
+        </div>
+        <div class="form-group lookup-dest-group">
+          <label for="lookup-city">Your City <span class="hint">(for distance &amp; cost)</span></label>
+          <div class="city-row">
+            <input type="text" id="lookup-city" placeholder="e.g. Delhi, Mumbai…" />
+            <button class="btn-gps" id="btn-gps-lookup" onclick="getLookupGPS()" title="Use my location">📍</button>
+          </div>
+          <span class="gps-status" id="gps-status-lookup"></span>
+        </div>
+      </div>
+      <div class="lookup-mini-grid">
+        <div class="form-group">
+          <label for="lookup-days">Days <span id="lookup-days-val" class="badge">5</span></label>
+          <input type="range" id="lookup-days" min="1" max="20" value="5"
+            oninput="document.getElementById('lookup-days-val').textContent=this.value" />
+        </div>
+        <div class="form-group">
+          <label for="lookup-budget">Budget / Day <span id="lookup-budget-val" class="badge">₹2,000</span></label>
+          <input type="range" id="lookup-budget" min="500" max="15000" step="500" value="2000"
+            oninput="document.getElementById('lookup-budget-val').textContent='₹'+Number(this.value).toLocaleString('en-IN')" />
+        </div>
+        <div class="form-group">
+          <label>Travel Group</label>
+          <div class="radio-group">
+            <label class="radio-btn"><input type="radio" name="lookup-group" value="solo" /> Solo</label>
+            <label class="radio-btn"><input type="radio" name="lookup-group" value="couple" /> Couple</label>
+            <label class="radio-btn active"><input type="radio" name="lookup-group" value="friends" checked /> Friends</label>
+            <label class="radio-btn"><input type="radio" name="lookup-group" value="family" /> Family</label>
+          </div>
+        </div>
+      </div>
+      <div class="search-footer">
+        <button class="btn-search" onclick="lookupDestination()">
+          <span>🎯</span> Look Up Destination
+        </button>
+      </div>
+    </div>
+
+    <!-- hidden top-k always 30 -->
+    <input type="hidden" id="top-k" value="30" />
+  </section>
+</div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main class="main">
+
+  <!-- Loading -->
+  <div class="loader" id="loader" style="display:none;">
+    <div class="spinner"></div>
+    <p>Searching across India…</p>
+  </div>
+
+  <!-- Error -->
+  <div class="error-msg" id="error-msg" style="display:none;"></div>
+
+  <!-- TOP PICKS -->
+  <section id="top-picks-section" style="display:none;">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Top Picks For You</h2>
+        <p class="top-picks-sub section-sub">Generating personalised travel plans…</p>
+      </div>
+      <span class="gps-badge" id="gps-badge" style="display:none;">📍 GPS active</span>
+    </div>
+    <div id="comparison-table-wrap"></div>
+    <div class="top-picks-grid" id="top-picks-grid"></div>
+  </section>
+
+  <!-- SAVED TRIPS -->
+  <section class="saved-section" id="saved-section" style="display:none;">
+    <div class="section-header">
+      <h2 class="section-title">Saved Destinations</h2>
+      <button class="btn-clear-saved" onclick="clearAllSaved()">Clear all</button>
+    </div>
+    <div class="saved-grid" id="saved-grid"></div>
+  </section>
+
+  <!-- ALL RESULTS -->
+  <section class="results-section" id="results-section" style="display:none;">
+    <details id="all-results-details">
+      <summary class="all-results-summary">
+        <span id="results-title">All matching destinations</span>
+        <div class="sort-row" onclick="event.stopPropagation()">
+          <label for="sort-by">Sort:</label>
+          <select id="sort-by" onchange="sortResults()">
+            <option value="score">Best Match</option>
+            <option value="budget">Lowest Cost</option>
+            <option value="popularity">Most Popular</option>
+            <option value="vibe_match">Vibe Match</option>
+          </select>
+        </div>
+      </summary>
+
+      <div class="filter-bar" id="filter-bar">
+        <div class="filter-group">
+          <span class="filter-label">Region</span>
+          <div class="filter-chips" id="filter-region">
+            <button class="filter-chip active" data-val="">All</button>
+            <button class="filter-chip" data-val="North India">North</button>
+            <button class="filter-chip" data-val="South India">South</button>
+            <button class="filter-chip" data-val="West India">West</button>
+            <button class="filter-chip" data-val="Central India">Central</button>
+            <button class="filter-chip" data-val="East India">East</button>
+            <button class="filter-chip" data-val="Northeast India">Northeast</button>
+          </div>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Budget</span>
+          <div class="filter-chips" id="filter-budget">
+            <button class="filter-chip active" data-val="">All</button>
+            <button class="filter-chip" data-val="budget">Budget (&lt;₹1.5k)</button>
+            <button class="filter-chip" data-val="medium">Mid (₹1.5k–4k)</button>
+            <button class="filter-chip" data-val="luxury">Luxury (&gt;₹4k)</button>
+          </div>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Season</span>
+          <div class="filter-chips" id="filter-season">
+            <button class="filter-chip active" data-val="">All</button>
+            <button class="filter-chip" data-val="in-season">In season only</button>
+          </div>
+        </div>
+        <div class="filter-status" id="filter-status"></div>
+      </div>
+
+      <div class="results-grid" id="results-grid"></div>
+    </details>
+  </section>
+
+  <!-- MAP -->
+  <section class="map-section card" id="map-section" style="display:none;">
+    <div class="map-header">
+      <h2 class="section-title" style="margin-bottom:0">Destination Map</h2>
+      <div class="map-legend" id="map-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#4ade80"></span>Top 3</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#22d3ee"></span>High match</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>Good match</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#475569"></span>All destinations</span>
+      </div>
+    </div>
+    <div id="map"></div>
+  </section>
+
+</main>
+
+<!-- ===== PHOTO GALLERY MODAL ===== -->
+<div class="modal-overlay" id="gallery-overlay" onclick="closeGallery()">
+  <div class="gallery-modal" onclick="event.stopPropagation()">
+    <div class="gallery-header">
+      <h3 class="gallery-title" id="gallery-title"></h3>
+      <button class="modal-close" onclick="closeGallery()">✕</button>
+    </div>
+    <div class="gallery-grid" id="gallery-grid"></div>
+    <div class="gallery-lightbox" id="gallery-lightbox" style="display:none;" onclick="closeLightbox()">
+      <button class="lightbox-nav left" onclick="event.stopPropagation();lightboxNav(-1)">&#8592;</button>
+      <img class="lightbox-img" id="lightbox-img" src="" alt="" onclick="event.stopPropagation()" />
+      <button class="lightbox-nav right" onclick="event.stopPropagation();lightboxNav(1)">&#8594;</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DETAIL MODAL ===== -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal()">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="auth.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
