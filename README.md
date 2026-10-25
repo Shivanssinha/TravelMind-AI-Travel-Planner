@@ -1,8 +1,7 @@
 # TravelAgent
 
 AI-powered India travel recommendation and planning app — hybrid search, RAG itinerary generation, 521 destinations.
-Github link :- [https://github.com/shivamkumar87/Travel-Agent/](url)
-
+TravelMind recommends Indian destinations based on a user’s preferences, budget, group type, trip duration and optionally location. It first searches and ranks possible destinations using keyword search, semantic similarity and a weighted scoring algorithm. For a selected destination, a RAG pipeline retrieves relevant travel-information chunks from ChromaDB, optionally adds live search snippets, and sends the context to an LLM to generate a day-by-day itinerary. FastAPI serves the backend, the frontend provides the interface, PostgreSQL stores application records, and Docker Compose runs the services together
 ---
 
 ## Prerequisites
